@@ -44,7 +44,7 @@
   "scripts": {
     "grunt": "grunt default",
     "gulp": "gulp build",
-    "webpack": "webpack"
+    "webpack": "webpack --config webpack-example/simple/webpack.config.js"
   },
   "repository": {
     "type": "git",

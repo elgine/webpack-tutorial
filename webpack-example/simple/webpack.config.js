@@ -5,7 +5,7 @@ const relative = (url)=>{
 }
 
 module.exports = {
-    entry: ["./webpack-example/main.js"],
+    entry: relative("main.js"),
     // webpack 4 新增
     mode: "development",
     output: {
