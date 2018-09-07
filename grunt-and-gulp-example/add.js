@@ -1,3 +1,4 @@
+'use strict'
 function add(){
     var args = Array.prototype.slice.call(arguments);
     function fn(){
