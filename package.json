@@ -32,6 +32,7 @@
     "html-webpack-plugin": "^3.2.0",
     "less": "^3.8.0",
     "less-loader": "^4.1.0",
+    "nodemon": "^1.18.4",
     "style-loader": "^0.21.0",
     "ts-loader": "^4.4.2",
     "typescript": "^3.0.1",
@@ -39,13 +40,17 @@
     "vue-loader": "^15.4.1",
     "webpack": "^4.16.4",
     "webpack-cli": "^3.1.0",
+    "webpack-dev-middleware": "^3.2.0",
     "webpack-dev-server": "^3.1.5",
+    "webpack-hot-middleware": "^2.23.1",
     "webpack-merge": "^4.1.4"
   },
   "scripts": {
     "grunt": "grunt default",
     "gulp": "gulp build",
-    "webpack-simple": "webpack --config webpack-example/simple/webpack.config.js"
+    "webpack-simple": "webpack --config webpack-example/simple/webpack.config.js",
+    "webpack-hmr-simple": "webpack-dev-server --colors --progress --config webpack-example/hmr-simple/webpack.config.js",
+    "webpack-hmr-express": "nodemon --config ./webpack-example/hmr-express/nodemon.json ./webpack-example/hmr-express/app.js"
   },
   "repository": {
     "type": "git",
@@ -60,5 +65,10 @@
   "bugs": {
     "url": "https://github.com/elgine/webpack-tutorial/issues"
   },
-  "homepage": "https://github.com/elgine/webpack-tutorial#readme"
+  "homepage": "https://github.com/elgine/webpack-tutorial#readme",
+  "dependencies": {
+    "express": "^4.16.3",
+    "koa-static": "^5.0.0",
+    "koa2": "^2.0.0-alpha.7"
+  }
 }

@@ -1,19 +1,43 @@
-# Webpack 从入门到放弃
-## 简介
-近10年前端发展太过迅速，自从v8与node.js的诞生开始，前端的职责渐渐从页面模式（原来的简单的页面效果、交互效果）开始向webapp的方向发展。为了解决某类问题，越来越多的前端插件、库、框架如雨后春笋般在前端社区开始生长，然而，由于依赖的模块越来越多，管理、测试、发布上线成为一系列炒鸡麻烦的事情，因此，前端的自动化构建工具应运而生。
+# Webpack
+## 开发模式与生产模式
+Webpack具有配置多样性，一些是在“开发模式”（development）下使用的，一些是“生产模式”下才能使用的，某些是共用的。举个栗子：
 
-## Grunt 与 Gulp
-Grunt 主张配置思想来打包脚本，在wrapper函数里配置任务，在grunt.initConfig注入任务配置，调用grunt执行，grunt支持子任务，可以在父任务里定义子任务，执行指定地子任务。Grunt 采用串行方式执行任务，按照任务名称地顺序形式，但是任务与任务之间没有通信桥梁，导致IO调用频繁。再就是随着项目地规模逐步增大，任务也会增多，在大量任务地情况下，试图用配置完成，这简直是disaster。
+![image](./webpack-config-dev-prod.png)
 
-Gulp 主张代码方式由于配置的思想，用过代码配置任务，代码采用流式地写法，写法较grunt简单灵活，官方抽象出src，pipe，dest，watch接口，入门相当简单，代码量远远少于编写grunt地代码量。同时在打包脚本上，gulp使用all in one 的打包方式，利用了node流的优势，减少IO的调用次数，使得打包速度比grunt快上好几倍。
+所以在配置前端工程化得时候，我们一般会把共用部分抽取出来，然后根据项目需求，把各个环境的配置分成一个文件，利用Mixins，与共用部分混合，组成完整的config文件。
 
-![image](./gulp-workflow.png)
+## 热替换
+在开发的时候，我们经常会修改某个源文件，但是每次修改都不想刷新页面，如果是修改后台代码，又不想重启服务器，这时候就需要热替换（HMR）。
 
-然而，gulp本身并没有模块化的概念，如果要在gulp上使用模块化，只能通过集成第三方模块化框架（require.js，seajs），同时grunt 和 gulp两者集成度不高，通常一个项目下来，要写不少的配置才能满足需求，这样一来，根本无法做到开箱即用。
+HMR会在webapp运行过程中动态增加，删除，添加<font color=#2196F3><b>模块<b></font>，而无需重新加载页面。
+### 原理
+- 监听文件修改变化，通知 Compiler 重新编译
+- Compiler 重新编译构建修改的一个或多个模块，通知 HMR服务器 进行更新
+- HMR Server 通过 websocket 通知 HMR Runtime 需要更新
+- HMR Runtime 替换更新中的模块
 
-## Webpack
-官方对webpack的定义是：“JavaScript 应用程序的静态模块打包器(module bundler)”。Webpack支持common.js模块化，且主张一切皆是模块的思想，当webpack处理应用程序的时候，会递归文件的引用，分析依赖关系，递归生成依赖关系图，其中包含应用程序需要的每个模块，然后将这些模块打包成一个或者多个bundle。
+### HotModuleReplacementPlugin
 
-![image](./webpack-workflow.png)
 
-同时Webpack 与 Grunt类似基于配置的构建方式，属于高度可配置化的，与 Grunt 不同的是，它包含的许多自动化的黑盒操作所以配置起来会简单很多。时至今日，随着Webpack生态圈的建立，Webpack能做的事不只是模块打包器而已，以Webpack为核心的前端工程化的思想已经流行起来，这个项目工程化的生成工具，叫做 “脚手架”。
+### 开箱即用的Webpack-dev-server
+
+
+### 集成服务端
+#### Express
+#### Koa2
+
+## 代码分割
+>对于大型的web 应用而言，把所有的代码放到一个文件的做法效率很差，特别是在加载了一些只有在特定环境下才会使用到的阻塞的代码的时候。Webpack有个功能会把你的代码分离成Chunk，后者可以按需加载。这个功能就是Code Spliiting
+
+Code Spliting的具体做法就是一个分离点，在分离点中依赖的模块会被打包到一起，可以异步加载。一个分离点会产生一个打包文件。
+## 按需加载
+代码如下：
+
+    // 第一个参数是依赖列表，webpack会加载模块，但不会执行
+    // 第二个参数是一个回调，在其中可以使用require载入模块
+    // 下面的代码会把module-a，module-b，module-c打包一个文件中，虽然module-c没有在依赖列表里，但是在回调里调用了，一样会被打包进来
+    require.ensure(["module-a", "module-b"], function(require) {
+        var a = require("module-a");
+        var b = require("module-b");
+        var c = require('module-c');
+    });

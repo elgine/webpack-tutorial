@@ -1,6 +1,7 @@
 const styleConfig = require("./styleConfig");
 const merge = require("webpack-merge");
-
+const HTMLWebpackPlugin = require("html-webpack-plugin");
+const path = require("path");
 module.exports = merge(styleConfig("style.css"), {
     module: {
         rules: [
@@ -14,5 +15,13 @@ module.exports = merge(styleConfig("style.css"), {
                 }
             }
         ]
-    }
+    },
+    plugins: [
+        new HTMLWebpackPlugin({
+            template: path.resolve(__dirname, "./index.html"),
+            filename: "index.html",
+            inject: true,
+            hash: true
+        })
+    ]
 });

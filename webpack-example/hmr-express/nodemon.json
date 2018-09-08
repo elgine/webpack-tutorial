@@ -1,0 +1,14 @@
+{
+    "restartable": "rs",
+    "ignore": [
+        "./client",
+        ".git",
+        "../../node_modules"
+    ],
+    "ext": ".js",
+    "watch": [
+        "app.js",
+        "nodemon.js",
+        "webpack.config.js"
+    ]
+}

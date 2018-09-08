@@ -10,10 +10,9 @@ const generate = function(extract){
         if(extract){
             config.use = Extract.extract({
                 fallback: "style-loader",
-                use: ["css-loader"].concat(loader==="css"?[]:[`${loader}-loader`])
+                use: ["style-loader", `${loader}-loader`]
             });
         }
-        console.log(config);
         return config;
     });
 }

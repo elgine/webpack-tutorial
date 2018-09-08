@@ -1,16 +1,12 @@
 const path = require("path");
 
-const relative = (url)=>{
-    return path.resolve(__dirname, url);
-}
-
 module.exports = {
-    entry: relative("main.js"),
+    entry: path.resolve(__dirname, "main.js"),
     // webpack 4 新增
     mode: "development",
     output: {
         filename: "bundle.js",
-        path: relative("./dest"),
+        path: path.resolve(__dirname, "./dest"),
         // 输出解析文件的目录，url 相对于 HTML 页面
         // publicPath: ""
     },
