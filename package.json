@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Webpack 从入门到放弃",
   "main": "tutorial01.js",
+
   "devDependencies": {
     "babel": "^6.23.0",
     "babel-cli": "^6.26.0",
@@ -50,7 +51,9 @@
     "gulp": "gulp build",
     "webpack-simple": "webpack --config webpack-example/simple/webpack.config.js",
     "webpack-hmr-simple": "webpack-dev-server --colors --progress --config webpack-example/hmr-simple/webpack.config.js",
-    "webpack-hmr-express": "nodemon --config ./webpack-example/hmr-express/nodemon.json ./webpack-example/hmr-express/app.js"
+    "webpack-hmr-express": "nodemon --config ./webpack-example/hmr-express/nodemon.json ./webpack-example/hmr-express/app.js",
+    "webpack-split-code": "webpack --config webpack-example/split-code/webpack.config.js",
+    "webpack-tree-shaking": "webpack --config webpack-example/tree-shaking/webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -69,6 +72,8 @@
   "dependencies": {
     "express": "^4.16.3",
     "koa-static": "^5.0.0",
-    "koa2": "^2.0.0-alpha.7"
+    "koa2": "^2.0.0-alpha.7",
+    "lodash": "^4.17.10",
+    "vue": "^2.5.17"
   }
 }

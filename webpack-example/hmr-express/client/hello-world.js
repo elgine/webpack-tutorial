@@ -1,3 +1,3 @@
 export default ()=>{
-    return "hello world1";
+    return "hello world";
 };
