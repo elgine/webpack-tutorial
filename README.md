@@ -109,16 +109,50 @@ Webpack4 legacy 版本把 CommonChunkPlugin 移除，用 SplitChunksPlugin 替�
 
     chunk-a to chunk-d: Only the components
 
->Webpack 会根据下述条件自动分割 chunks：
+Webpack 会根据下述条件自动分割 chunks：
 - 新代码块可以被共享引用，OR这些模块都是来自node_modules文件夹里面
 - 新代码块大于30kb（min+gziped之前的体积）
 - 按需加载的代码块，最大数量应该小于或者等于5
 - 初始加载的代码块，最大数量应该小于或等于3
+- 当试图满足最后两个条件，首选更大的块
 
 SplitChunksPlugin选项：
 
+    // 哪类型的块可以优化，默认为 all
+    chunks: all,
+    // 压缩前最小模块大小，默认0（bytes）
+    minSize: 0,
+    // 表示代码分割前必须共享模块的最小块数量
+    minChunks: 1,
+    // 最大按需（异步）加载次数，默认为1
+    maxAsyncRequests: 1,
+    // 最大初始化加载次数，默认为1
+    maxInitialRequests: 1,
+    // 拆分出来块的名字，默认由块名和hash值自动生成
+    name: [name] + [hash],
+    // 模块最大大小，用于告诉 webpack 尝试将大于 maxSize的块拆分成更小的部分。Chunk 的尺寸最小为 minSize。
+    maxSize,
+    // 缓存组
+    cacheGroups: {
+        // 缓存组继承 splitChunks 的所有设置项，且可以覆盖原值
+        [key]: {
+            // 缓存组的规则
+            test,
+            // 表示缓存的优先级
+            priority,
+            // 表示可以使用已经存在的块，即如果满足条件的块已经存在就使用已有的，不再创建一个新的块
+            reuseExistingChunk
+        },
+        ...
+    }
+
+按需加载伪代码：
+
+    // Es6 标准，通过注释制定打包后的 chunk 名称
+    import(/* webpackChunkName: 'chunk'*/"chunk").then(callback)
+
+    // webpack 内部实现
+    require.ensure(["chunk"], callback, chunkName)
 
 ## Tree shaking
 当在一个模块文件中，引入了另一个模块，但是并没有使用被引入模块的内容时，webpack 依然会把没使用的那部分的代码编译进去，这样会对资源产生浪费，这个时候，若要优化这一方面，我们需要使用摇树（Tree shaking）。这思想最初出自 Rollup，利用 es6 的静态解析特性，在解析阶段就确定输出模块，可以确定哪些模块会被使用，只要在 AST 阶段把 dead code 移除，只剩下被使用部分，这样就能实现 tree-shaking。
-
-Webpack4 以前并没有集成 tree-shaking，直到 4.0 beta 版本问世，官方把原来的 Uglify 部分集成到发布模式上，从而实现 tree-shaking，然而，目前来看并没有与 babel 集成的方案。目前 babel 7.0 貌似已经有解决方案，不过由于 7.0 并不稳定，加上目前大部分项目都是使用 babel6，因此这里就不进行述说了。
