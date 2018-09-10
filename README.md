@@ -27,9 +27,10 @@ Webpack具有配置多样性，一些是在“开发模式”（development）�
     }
 
 ## 热替换
-在开发的时候，我们经常会修改某个源文件，但是每次修改都不想刷新页面，如果是修改后台代码，又不想重启服务器，这时候就需要热替换（HMR）。
+在开发阶段，若经常修改某个源文件，导致服务器或者客户端需要重新重启或者刷新才能看到效果，这必然会耗费大量时间，热替换（HMR）就是为了解决这个问题而设立的。
 
-HMR会在webapp运行过程中动态增加，删除，添加模块，而无需重新加载页面。
+>HMR会在webapp运行过程中动态增加，删除，添加模块，而无需重新加载页面。
+
 ### 原理
 - 监听文件修改变化，通知 Compiler 重新编译
 - Compiler 重新编译构建修改的一个或多个模块，通知 HMR服务器 进行更新
@@ -39,7 +40,7 @@ HMR会在webapp运行过程中动态增加，删除，添加模块，而无需�
 Webpack 向 client 暴露了一系列 HMR Runtime API，可以让客户端在 HMR 的某个时刻做一些有趣的事情。
 
 ### 开箱即用的Webpack-dev-server
-若你开发的webapp正处于测试阶段且与后台数据没有依赖关系的话，使用 webpack-dev-server 将是最能加快你开发进度的 HMR 插件。Webpack 内部集成了 Webpack-dev-server 配置项，只要配置好 devServer，以及插入 webpack.HotModuleReplacementPlugin 插件即可达到开箱即用。
+Webpack-dev-server 是一款开箱即用的 HMR 插件，且 Webpack 内部集成了 Webpack-dev-server 配置项，只要配置好 devServer，以及注入 webpack.HotModuleReplacementPlugin 插件即可使用。
 
     // Npm scripts
     webpack-dev-server --colors --progress
@@ -79,26 +80,45 @@ Webpack 向 client 暴露了一系列 HMR Runtime API，可以让客户端在 HM
 
 
 ### 集成node.js服务端
-若是需要与node.js后端联合开发，且希望不想另外搭建一个静态页面服务器的话，那你就需要使用 middleware 集成 HMR了。要在服务端集成 HMR，最快的方案，你需要两个middleware，分别是 webpack-dev-middleware 与 webpack-hot-middleware。
+若是需要与node.js后端联合开发，且希望不想另外搭建一个静态页面服务器集成 HMR，对于这种情况，需要两个middleware，分别是 webpack-dev-middleware 与 webpack-hot-middleware。
 
 Webpack-dev-middleware 在 webpack 模块依赖图基础上构建了一套内存文件的缓存系统，把负责将编译后的文件以内存方式存储在服务器中，因为是储存在内存中， 因此访问速度比硬盘读取快。Webpack-hot-middleware 则负责HMR服务器与客户端之间的热更新数据传递。
 
-以 Express 为例，只要导入 Webpack-dev-middleware 与 Webpack-hot-middleware，并挂载在 Express 的实例上，服务端的配置基本完成，当然，两个中间件各有不同的参数，你可以翻阅官方文档进行查阅。而在 webpack 配置文件中，需要在 entry 上添加 "webpack-hot-middleware/client?xxx=xxx"，记得在 plugins 中注册 HotModuleReplacementPlugin即可。
+以 Express 为例，只要导入 Webpack-dev-middleware 与 Webpack-hot-middleware，并挂载在 Express 的实例上，服务端的配置基本完成，当然，两个中间件各有不同的参数，你可以翻阅官方文档进行查阅。而在 webpack 配置文件中，需要在 entry 上添加 "webpack-hot-middleware/client?xxx=xxx"，然后在 plugins 中注册 HotModuleReplacementPlugin即可。
 
 ## 代码分割与按需加载
-我们通常会设置 webpack 的打包输出为一个bundle，在一般情况下，我们是不需要做什么修改的，但是如果你需要在首屏显示上获得更高性能，那么有一步你是必须要做的就是，code spliting 与 lazy load。
+Webpack4 legacy 版本把 CommonChunkPlugin 移除，用 SplitChunksPlugin 替代 CommonChunkPlugin。CommonChunkPlugin 会把公用模块全都抽取出来，造成入口文件过大，不利于首屏显示，SplitChunksPlugin就是在解决代码重复程度与入口文件大小之间的平衡而设的。
 
-自 webpack4 legacy 版本推出之后，webpack 官方把 commonChunkPlugin 移除，新增加一个 Plugin，用于替代 commonChunkPlugin，它就是 splitChunksPlugin，配置选项也跟原来的不太一样，因此，从 webpack3 迁移到 webpack4 的同志们要注意了。
+举个官方栗子：
 
-splitChunksPlugin 的配置项，既可以在 Plugin 引用 splitChunksPlugin 的时候注入进去，也可以在 optimization.splitChunks 里设置，配置选项基本都是一样的。
+    假设存在以下chunk-a~chunk-d
 
-webpack 会根据下述条件自动进行 code spliting：
+    chunk-a: react, react-dom, some components
+
+    chunk-b: react, react-dom, some other components
+
+    chunk-c: angular, some components
+
+    chunk-d: angular, some other components
+
+    webpack会自动创建两个chunk模块，结果如下：
+
+    chunk-a~chunk-b: react, react-dom
+
+    chunk-c~chunk-d: angular
+
+    chunk-a to chunk-d: Only the components
+
+>Webpack 会根据下述条件自动分割 chunks：
 - 新代码块可以被共享引用，OR这些模块都是来自node_modules文件夹里面
 - 新代码块大于30kb（min+gziped之前的体积）
 - 按需加载的代码块，最大数量应该小于或者等于5
 - 初始加载的代码块，最大数量应该小于或等于3
 
-## Tree shaking
-当我们在一个模块文件中，引入了另一个模块，但是并没有使用被引入模块的内容时，webpack 依然会把没使用的那部分的代码编译进去，这样会对资源产生浪费，这个时候，若要优化这一方面，我们需要使用摇树（Tree shaking）。这思想最初由 Rollup 带出，利用 es6 的静态解析特性，在解析阶段就确定输出模块，可以确定哪些模块会被使用，只要在 AST 阶段把 dead code 移除，只剩下被使用部分，这样就实现 tree-shaking。
+SplitChunksPlugin选项：
 
-Webpack 4 以前并没有集成 tree-shaking，直到 4.0 beta 版本问世，官方把原来的 Uglify 部分集成到发布模式上，从而实现 tree-shaking，然而，目前来看并没有与 babel 集成的方案。目前 babel 7.0 貌似已经有解决方案，不过由于 7.0 并不稳定，加上目前大部分项目都是使用 babel6，因此这里就不进行述说了。
+
+## Tree shaking
+当在一个模块文件中，引入了另一个模块，但是并没有使用被引入模块的内容时，webpack 依然会把没使用的那部分的代码编译进去，这样会对资源产生浪费，这个时候，若要优化这一方面，我们需要使用摇树（Tree shaking）。这思想最初出自 Rollup，利用 es6 的静态解析特性，在解析阶段就确定输出模块，可以确定哪些模块会被使用，只要在 AST 阶段把 dead code 移除，只剩下被使用部分，这样就能实现 tree-shaking。
+
+Webpack4 以前并没有集成 tree-shaking，直到 4.0 beta 版本问世，官方把原来的 Uglify 部分集成到发布模式上，从而实现 tree-shaking，然而，目前来看并没有与 babel 集成的方案。目前 babel 7.0 貌似已经有解决方案，不过由于 7.0 并不稳定，加上目前大部分项目都是使用 babel6，因此这里就不进行述说了。

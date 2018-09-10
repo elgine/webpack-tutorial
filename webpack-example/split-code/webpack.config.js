@@ -15,8 +15,7 @@ module.exports = merge(baseConfig, {
     },
     mode: "development",
     plugins: [
-        new webpack.optimize.SplitChunksPlugin(
-        {
+        new webpack.optimize.SplitChunksPlugin({
             chunks: "all",
             minSize: 0,
             maxAsyncRequests: 3,
@@ -38,7 +37,6 @@ module.exports = merge(baseConfig, {
                     priority: 10
                 }
             }
-        }
-        )
+        })
     ]
 });
