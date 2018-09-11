@@ -1,8 +1,6 @@
-const styleConfig = require("./styleConfig");
-const merge = require("webpack-merge");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
-module.exports = merge(styleConfig("style.css"), {
+module.exports = {
     module: {
         rules: [
             {
@@ -24,4 +22,4 @@ module.exports = merge(styleConfig("style.css"), {
             hash: true
         })
     ]
-});
+};

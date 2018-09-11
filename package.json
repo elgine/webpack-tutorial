@@ -14,6 +14,7 @@
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
     "babel-register": "^6.26.0",
+    "clean-webpack-plugin": "^0.1.19",
     "compression-webpack-plugin": "^1.1.11",
     "css-loader": "^1.0.0",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
@@ -53,7 +54,8 @@
     "webpack-hmr-express": "nodemon --config ./webpack-example/hmr-express/nodemon.json ./webpack-example/hmr-express/app.js",
     "webpack-split-code": "webpack --config webpack-example/split-code/webpack.config.js",
     "webpack-tree-shaking": "webpack --config webpack-example/tree-shaking/webpack.config.js",
-    "webpack-build": "webpack --config webpack-example/library/webpack.config.js"
+    "webpack-build": "webpack --config webpack-example/library/webpack.config.js",
+    "webpack-custom-loader": "webpack --config webpack-example/custom-loader/webpack.config.js"
   },
   "repository": {
     "type": "git",

@@ -1,158 +1,140 @@
-# Webpack 实战
+# Webpack
+![image](./webpack.png)
 
-## 开发模式与生产模式
-Webpack具有配置多样性，一些是在“开发模式”（development）下使用的，一些是“生产模式”下才能使用的，某些是共用的。举个栗子：
+## Webpack 是什么？为什么使用 webpack ？
+### 模块化
+ES6之前，JavaScript没有原生的模块机制，不过由于 Javascript 的作用域管理机制，可以隔离作用域，避免污染作用域，起到模块化的作用：
 
-![image](./webpack-config-dev-prod.png)
+    // IIFE
+    var module = (function(options){
+        return ...;
+    })(options);
 
-所以在配置前端工程化得时候，我们一般会把共用部分抽取出来，然后根据项目需求，把各个环境的配置分成一个文件，利用Mixins，与共用部分混合，组成完整的config文件。
-
-## 生产模式下发布库
-
-    output: {
-        ...
-        // 导出的 library 名称
-        library: "math",
-        // var （默认值）当 library 加载完成，入口起点的返回值将分配给一个变量
-        // assign 这将产生一个隐含的全局变量，可能会潜在地重新分配到全局中已存在的值（谨慎使用）
-        // this 入口起点的返回值将分配给 this 的一个属性
-        // window 分配到 window 对象上
-        // global 分配给 global 对象
-        // commonjs|commonjs2 分配给 exports 对象
-        // amd 暴露为 AMD 模块
-        // umd 将你的 library 暴露为所有的模块定义下都可运行的方式。它将在 CommonJS, AMD 环境下运行，或将模块导出到 global 下的变量
-        libraryTarget: "umd",
-        // 设置导出模块
-        libraryExport: "default"
+    // Closure
+    var Person = function(){
+        function Person{
+            ...
+        }
+        Person.prototype.xxx = function(){
+            ...
+        }
+        return Person;
     }
 
-## 热替换
-在开发阶段，若经常修改某个源文件，导致服务器或者客户端需要重新重启或者刷新才能看到效果，这必然会耗费大量时间，热替换（HMR）就是为了解决这个问题而设立的。
+向上面这类代码，在一些小型应用，依赖关系不是很复杂的情况下，人工去管理这种模块是没有什么问题的，但是随着项目的增大，依赖越来越大的情况下，这就会变成 disaster。
 
->HMR会在webapp运行过程中动态增加，删除，添加模块，而无需重新加载页面。
+这里引用官方的介绍：
+> 本质上，webpack 是一个现代 JavaScript 应用程序的静态模块打包器(module bundler)。当 webpack 处理应用程序时，它会递归地构建一个依赖关系图(dependency graph)，其中包含应用程序需要的每个模块，然后将所有这些模块打包成一个或多个 bundle。
 
-### 原理
-- 监听文件修改变化，通知 Compiler 重新编译
-- Compiler 重新编译构建修改的一个或多个模块，通知 HMR服务器 进行更新
-- HMR Server 通过 websocket 通知 HMR Runtime 需要更新
-- HMR Runtime 替换更新中的模块
+Webpack 的存在打破了长期以来 Javascript 开发的一大痛点 —— 模块化管理。当然，Webpack 还有以下特点：
+- 模块化，支持 AMD、CommonJs、UMD，解决了 Js 长期以来的开发痛点
+- 高度可配置化，开箱即用，灵活性强，配置简单
+- 扩展性强，插件完善，有庞大的社区支持
+- 详细地开发文档（2.0之后）
 
-Webpack 向 client 暴露了一系列 HMR Runtime API，可以让客户端在 HMR 的某个时刻做一些有趣的事情。
+## 打包原理
+### 核心概念
+- Entry：入口，Webpack 执行构建的第一步将从 Entry 开始，可抽象成输入。
+- Module：模块，在 Webpack 里一切皆模块，一个模块对应着一个文件。Webpack 会从配置的 Entry 开始递归找出所有依赖的模块。
+- Chunk：代码块，一个 Chunk 由多个模块组合而成，用于代码合并与分割。
+- Loader：模块转换器，用于把模块原内容按照需求转换成新内容。
+- Plugin：扩展插件，在 Webpack 构建流程中的特定时机会广播出对应的事件，插件可以监听这些事件的发生，在特定时机做对应的事情。
 
-### 开箱即用的Webpack-dev-server
-Webpack-dev-server 是一款开箱即用的 HMR 插件，且 Webpack 内部集成了 Webpack-dev-server 配置项，只要配置好 devServer，以及注入 webpack.HotModuleReplacementPlugin 插件即可使用。
+### 流程
+1. 初始化阶段，读取合并配置参数，初始化 loader 与 plugin，实例化 compiler，compiler 调用 run 方法开始编译
+2. 编译阶段，从入口文件出发，使用相应的 loader 解析内容，使 webpack 能够识别处理的有效模块，并递归进行编译处理，最后遍历完所有模块文件，生成 “模块依赖图” 
+3. 输出阶段，根据模块生成 chunk，把 chunk 写入文件，存入文件系统或者内存文件系统 
 
-    // Npm scripts
-    webpack-dev-server --colors --progress
+### 模块管理
+#### runtime
+>在浏览器运行时，webpack 用来连接模块化的应用程序的所有代码。runtime包括：在模块交互时，连接模块所需的加载和解析逻辑。包括浏览器中的已加载模块的连接以及懒加载模块的执行逻辑。
 
-    // entry.js
-    if (module.hot) {
-        module.hot.accept("./xxx.js", function() {
-            console.log("Accepting the updated printMe module!");
-        })
+#### mainfest
+>当编译器开始执行、解析和映射应用程序时，它会保留所有模块的详细要点。这个数据集合称为“mainfest”，当完成打包并发送到浏览器时，会在运行时通过 mainfest 来解析和加载模块。
+
+Webpack4 runtime 代码由 runtimeChunkPlugin 导出，
+一般 webpack 导出的 runtime 文件代码结构大概是这样的：
+
+    (function(modules) {
+        // 已经加载的模块
+        var installedModules = {};
+        // 加载方法
+        function __webpack_require__(moduleId) {
+            ...
+        }
+    })({...};
+
+runtime 里的模块管理主要由下面三个部分构成：
+
+    // 所有模块的生成代码，
+    var modules；
+    // 所有已经加载的模块，作为缓存表
+    var installedModules；
+    // 加载模块的函数
+    function webpack_require(moduleId);
+
+webpack_require 的源码大概是这样：
+
+    // 加载完毕的所有模块。
+    var installedModules = {};
+    
+    function webpack_require(moduleId) {
+        // 如果模块已经加载过了，直接从Cache中读取。
+        if (installedModules[moduleId]) {
+        return installedModules[moduleId].exports;
+        }
+    
+        // 创建新模块并添加到installedModules。
+        var module = installedModules[moduleId] = {
+            id: moduleId,
+            exports: {}
+        };
+    
+        // 加载模块，即运行模块的生成代码，
+        modules[moduleId].call(module.exports, module, module.exports, webpack_require);
+    
+        return module.exports;
     }
 
-    // webpack.config.js
-    module.exports = merge(baseConfig, {
-        ...,
-        devServer: {
-            port: 3000,
-            host: "localhost",
-            contentBase: path.join(__dirname, "dest"),
-            hot: true
-        },
-        plugins: [
-            new webpack.HotModuleReplacementPlugin()
-        ]
-    });
+## 内部架构
+Webpack 内部架构是基于 Tapable 构建的，Tapable 是一个用于事件发布订阅执行的插件架构。插件通过被 Webpack 调用 apply 的方式，往 compiler 上注册事件，来监听 webpack 的运行周期的某个时刻触发的事件来完成自己的功能需求。
 
-### DevServer与后端服务器结合
-当你有一个单独的 API 后端服务器，且想在同一域下调用这些 API，你就需要用到 proxy 属性。
+### Compiler
+>Webpack 初始化时创建的单例对象，基于 Tapable 的实例，整个 webpack 生命周期里只有一个，包含了 webpack 的所有环境描述。
 
-    proxy: {
-        '/proxy': {
-            target: 'http://your_api_server.com',
-            changeOrigin: true,
-            pathRewrite: {
-                '^/proxy': ''
-            }
-    }
+### Compilation
+>compilation 对象代表了一次单一的版本构建和生成资源，基于 Tapable 的实例。当运行 webpack 时，每当检测到一个文件变化，一次新的编译将被创建，从而生成一组新的编译资源。一个编译对象表现了当前的模块资源、编译生成资源、变化的文件、以及被跟踪依赖的状态信息。
 
+### Plugin
+Webpack 插件有以下特点：
+- 独立的 JS 模块，暴露相应的函数
+- 函数原型上的 apply 方法会注入 compiler 对象
+- compiler 对象上挂载了相应的 webpack 事件钩子
+- 事件钩子的回调函数里能拿到编译后的 compilation 对象，如果是异步钩子还能获取相应的 callback
 
-### 集成node.js服务端
-若是需要与node.js后端联合开发，且希望不想另外搭建一个静态页面服务器集成 HMR，对于这种情况，需要两个middleware，分别是 webpack-dev-middleware 与 webpack-hot-middleware。
+一般的插件定义形式：
 
-Webpack-dev-middleware 在 webpack 模块依赖图基础上构建了一套内存文件的缓存系统，把负责将编译后的文件以内存方式存储在服务器中，因为是储存在内存中， 因此访问速度比硬盘读取快。Webpack-hot-middleware 则负责HMR服务器与客户端之间的热更新数据传递。
-
-以 Express 为例，只要导入 Webpack-dev-middleware 与 Webpack-hot-middleware，并挂载在 Express 的实例上，服务端的配置基本完成，当然，两个中间件各有不同的参数，你可以翻阅官方文档进行查阅。而在 webpack 配置文件中，需要在 entry 上添加 "webpack-hot-middleware/client?xxx=xxx"，然后在 plugins 中注册 HotModuleReplacementPlugin即可。
-
-## 代码分割与按需加载
-Webpack4 legacy 版本把 CommonChunkPlugin 移除，用 SplitChunksPlugin 替代 CommonChunkPlugin。CommonChunkPlugin 会把公用模块全都抽取出来，造成入口文件过大，不利于首屏显示，SplitChunksPlugin就是在解决代码重复程度与入口文件大小之间的平衡而设的。
-
-举个官方栗子：
-
-    假设存在以下chunk-a~chunk-d
-
-    chunk-a: react, react-dom, some components
-
-    chunk-b: react, react-dom, some other components
-
-    chunk-c: angular, some components
-
-    chunk-d: angular, some other components
-
-    webpack会自动创建两个chunk模块，结果如下：
-
-    chunk-a~chunk-b: react, react-dom
-
-    chunk-c~chunk-d: angular
-
-    chunk-a to chunk-d: Only the components
-
-Webpack 会根据下述条件自动分割 chunks：
-- 新代码块可以被共享引用，OR这些模块都是来自node_modules文件夹里面
-- 新代码块大于30kb（min+gziped之前的体积）
-- 按需加载的代码块，最大数量应该小于或者等于5
-- 初始加载的代码块，最大数量应该小于或等于3
-- 当试图满足最后两个条件，首选更大的块
-
-SplitChunksPlugin选项：
-
-    // 哪类型的块可以优化，默认为 all
-    chunks: all,
-    // 压缩前最小模块大小，默认0（bytes）
-    minSize: 0,
-    // 表示代码分割前必须共享模块的最小块数量
-    minChunks: 1,
-    // 最大按需（异步）加载次数，默认为1
-    maxAsyncRequests: 1,
-    // 最大初始化加载次数，默认为1
-    maxInitialRequests: 1,
-    // 拆分出来块的名字，默认由块名和hash值自动生成
-    name: [name] + [hash],
-    // 模块最大大小，用于告诉 webpack 尝试将大于 maxSize的块拆分成更小的部分。Chunk 的尺寸最小为 minSize。
-    maxSize,
-    // 缓存组
-    cacheGroups: {
-        // 缓存组继承 splitChunks 的所有设置项，且可以覆盖原值
-        [key]: {
-            // 缓存组的规则
-            test,
-            // 表示缓存的优先级
-            priority,
-            // 表示可以使用已经存在的块，即如果满足条件的块已经存在就使用已有的，不再创建一个新的块
-            reuseExistingChunk
-        },
+    function Plugin(options){
         ...
     }
 
-按需加载伪代码：
+    // Webpack 会调用 apply 方法并注入 compiler
+    Plugin.prototype.apply = function(compiler){
+        // 通过 plugin 可以获取 compilation，Webpack 会在特定时间 broadcast 事件
+        compiler.plugin("event", function(compilation, callback){
+            ...
+        });
+        ...
+    }
 
-    // Es6 标准，通过注释制定打包后的 chunk 名称
-    import(/* webpackChunkName: 'chunk'*/"chunk").then(callback)
-
-    // webpack 内部实现
-    require.ensure(["chunk"], callback, chunkName)
-
-## Tree shaking
-当在一个模块文件中，引入了另一个模块，但是并没有使用被引入模块的内容时，webpack 依然会把没使用的那部分的代码编译进去，这样会对资源产生浪费，这个时候，若要优化这一方面，我们需要使用摇树（Tree shaking）。这思想最初出自 Rollup，利用 es6 的静态解析特性，在解析阶段就确定输出模块，可以确定哪些模块会被使用，只要在 AST 阶段把 dead code 移除，只剩下被使用部分，这样就能实现 tree-shaking。
+下面是一些常见的时间钩子的说明：
+| 钩子 | 作用 | 参数 | 类型 |
+| ------ | ------ | ------ | ------ |
+|after-plugins | 设置完一组初始化插件之后 | compiler | sync |
+|after-resolvers | 设置完 resolvers 之后 | compiler | sync |
+|run | 在读取记录之前 | compiler | async |
+|compile | 在创建新 compilation 之前 | compilationParams | sync |
+|compilation | compilation 创建完成 | compilation | sync |
+|emit | 在生成资源并输出到目录之前 | compilation | async |
+|after-emit | 在生成资源并输出到目录之后 | compilation | async |
+|done | 完成编译 | stats | sync |

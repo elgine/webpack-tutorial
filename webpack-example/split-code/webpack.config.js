@@ -14,29 +14,29 @@ module.exports = merge(baseConfig, {
         chunkFilename: "[name].chunk.js"
     },
     mode: "development",
-    plugins: [
-        new webpack.optimize.SplitChunksPlugin({
-            chunks: "all",
-            minSize: 0,
-            maxAsyncRequests: 3,
-            maxInitialRequests: 3,
+    devtool: "source-map",
+    optimization: {
+        splitChunks: {
             cacheGroups: {
-                // 注意: priority属性
-                // 其次: 打包业务中公共代码
                 common: {
                     name: "common",
-                    chunks: "all",
-                    minSize: 2,
-                    priority: 0
+                    minSize: 0,
+                    minChunks: 1,
+                    reuseExistingChunk: true,
+                    enforce: true
                 },
-                // 首先: 打包node_modules中的文件
-                vendor: {
-                    name: "vendor",
+                vendors: {
+                    name: "vendors",
+                    minSize: 0,
+                    minChunks: 1,
                     test: /[\\/]node_modules[\\/]/,
-                    chunks: "all",
-                    priority: 10
+                    priority: 10,
+                    enforce: true
                 }
             }
-        })
-    ]
+        },
+        runtimeChunk: {
+            name: "mainfest"
+        }
+    }
 });
