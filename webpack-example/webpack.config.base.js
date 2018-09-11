@@ -8,8 +8,7 @@ module.exports = {
                 loader: "babel-loader",
                 exclude: /node_modules/,
                 options: {
-                    presets: ["env", "es2015", "stage-2"],
-                    plugins: ["transform-decorators-legacy", "transform-regenerator", "transform-runtime"]
+                    presets: ["@babel/preset-env"]
                 }
             }
         ]
