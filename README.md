@@ -32,13 +32,90 @@ Webpack 的存在打破了长期以来 Javascript 开发的一大痛点 —— �
 - 扩展性强，插件完善，有庞大的社区支持
 - 详细地开发文档（2.0之后）
 
-## 打包原理
-### 核心概念
+## 概念
 - Entry：入口，Webpack 执行构建的第一步将从 Entry 开始，可抽象成输入。
 - Module：模块，在 Webpack 里一切皆模块，一个模块对应着一个文件。Webpack 会从配置的 Entry 开始递归找出所有依赖的模块。
 - Chunk：代码块，一个 Chunk 由多个模块组合而成，用于代码合并与分割。
 - Loader：模块转换器，用于把模块原内容按照需求转换成新内容。
 - Plugin：扩展插件，在 Webpack 构建流程中的特定时机会广播出对应的事件，插件可以监听这些事件的发生，在特定时机做对应的事情。
+
+## 常用配置项
+
+    module.exports = {
+        // 入口文件/
+        entry: Object|Array|String,
+        // 输出设置
+        output: {
+            // 输出路径
+            path: string,
+            // 输出文件名称
+            filename: string,
+
+            // 以下均在输出库的情况下使用
+            // 导出的 library 名称
+            library: "math",
+            // var （默认值）当 library 加载完成，入口起点的返回值将分配给一个变量
+            // assign 这将产生一个隐含的全局变量，可能会潜在地重新分配到全局中已存在的值（谨慎使用）
+            // this 入口起点的返回值将分配给 this 的一个属性
+            // window 分配到 window 对象上
+            // global 分配给 global 对象
+            // commonjs|commonjs2 分配给 exports 对象
+            // amd 暴露为 AMD 模块
+            // umd 将你的 library 暴露为所有的模块定义下都可运行的方式。它将在 CommonJS, AMD 环境下运行，或将模块导出到 global 下的变量
+            libraryTarget: "umd",
+            // 设置导出模块
+            libraryExport: "default"
+        },
+        resolve: {
+            // 依赖项别名
+            alias: {
+                [key]: string
+            }
+        },
+        module: {
+            // 配置模块转换规则，即为某种类型的模块，
+            // 设置相应的 loader 去解析
+            rules: [
+                {
+                    // 正则表达式匹配文件名，一般是设置后缀名匹配
+                    test: /\.xx$/,
+
+                    // 设置 loader 由两种方式，使用 loader 或者 use，多个 
+                    // loader 执行顺序从右往左，3.0 以后 loader 必须是全称
+                    // 使用 loader 属性可传参，传参格式与 Get 请求一致，多个
+                    // loader 之间使用 ! 连接
+                    loader: "xx-loader!xx1-loader!xx2-loader?xx=&xx=",
+
+                    // 使用 use 属性设置，格式是数组方式，成员可以为字符串和对象，
+                    // 若是字符串代表 loader 名称
+                    // 执行顺序同上
+                    use: [
+                        "xx-loader", 
+                        {
+                            loader: "xx-loader",
+                            options: {}
+                        }
+                    ]
+                }
+            ]
+        },
+        // 挂载插件，插件一般都是构造函数形式，且构造函数
+        // 参数为一个对象，为传递给插件的设置参数
+        plugins: [
+            new xxPlugin({
+                ...
+            })
+        ],
+        // 自 4.0 之后，大部分插件的设置都迁移到这个属性上
+        optimization: {
+            // 设置代码分割
+            splitChunks: {},
+            // 分离出 runtime 代码
+            runtime: {}
+        }
+    };
+
+## 打包原理
 
 ### 流程
 1. 初始化阶段，读取合并配置参数，初始化 loader 与 plugin，实例化 compiler，compiler 调用 run 方法开始编译

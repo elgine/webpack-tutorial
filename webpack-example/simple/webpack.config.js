@@ -1,11 +1,11 @@
 const path = require("path");
 
 module.exports = {
-    entry: path.resolve(__dirname, "main.js"),
+    entry: [path.resolve(__dirname, "index.js"), path.resolve(__dirname, "./console.js")],
     // webpack 4 新增
     mode: "development",
     output: {
-        filename: "bundle.js",
+        filename: "[name].js",
         path: path.resolve(__dirname, "./dest"),
         // 输出解析文件的目录，url 相对于 HTML 页面
         // publicPath: ""
@@ -17,8 +17,7 @@ module.exports = {
                 loader: "babel-loader",
                 exclude: /node_modules/,
                 options: {
-                    presets: ["env", "es2015", "stage-2"],
-                    plugins: ["transform-decorators-legacy", "transform-regenerator", "transform-runtime"]
+                    presets: ["@babel/env"]
                 }
             }
         ]
