@@ -7,6 +7,17 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Multiple page framework",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "webpack-mul-page"
+            ],
+            "port": 9229
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "HMR Express",
             "program": "${workspaceFolder}/webpack-example/hmr-express/app.js"
         },

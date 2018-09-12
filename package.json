@@ -16,6 +16,7 @@
     "clean-webpack-plugin": "^0.1.19",
     "compression-webpack-plugin": "^1.1.11",
     "css-loader": "^1.0.0",
+    "cssnano": "^4.1.0",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "file-loader": "^1.1.11",
     "grunt": "^1.0.3",
@@ -32,10 +33,13 @@
     "less": "^3.8.0",
     "less-loader": "^4.1.0",
     "nodemon": "^1.18.4",
+    "optimize-css-assets-webpack-plugin": "^5.0.1",
+    "postcss-loader": "^3.0.0",
     "style-loader": "^0.21.0",
     "ts-loader": "^4.4.2",
     "typescript": "^3.0.1",
     "uglifyjs-webpack-plugin": "^1.3.0",
+    "url-loader": "^1.1.1",
     "vue-loader": "^15.4.1",
     "webpack": "^4.16.4",
     "webpack-bundle-analyzer": "^2.13.1",
@@ -54,7 +58,9 @@
     "webpack-split-code": "webpack --config webpack-example/split-code/webpack.config.js",
     "webpack-tree-shaking": "webpack --config webpack-example/tree-shaking/webpack.config.js",
     "webpack-build": "webpack --config webpack-example/library/webpack.config.js",
-    "webpack-custom-loader": "webpack --config webpack-example/custom-loader/webpack.config.js"
+    "webpack-custom-loader": "webpack --config webpack-example/custom-loader/webpack.config.js",
+    "multiple-page-dev": "webpack-dev-server --config multiple-page/build/webpack.config.dev.js",
+    "multiple-page-prod": "webpack --config multiple-page/build/webpack.config.prod.js"
   },
   "repository": {
     "type": "git",

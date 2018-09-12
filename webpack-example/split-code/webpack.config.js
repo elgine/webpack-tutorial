@@ -1,4 +1,3 @@
-const webpack = require("webpack");
 const baseConfig = require("../webpack.config.base");
 const merge = require("webpack-merge");
 const path = require("path");
@@ -27,6 +26,7 @@ module.exports = merge(baseConfig, {
                 },
                 vendors: {
                     name: "vendors",
+                    chunks:"all",
                     minSize: 0,
                     minChunks: 1,
                     test: /[\\/]node_modules[\\/]/,
