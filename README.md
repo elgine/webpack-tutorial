@@ -1,4 +1,4 @@
-# Webpack
+# Webpack 从入门到放弃
 ![image](./webpack.png)
 
 ## Webpack 是什么？为什么使用 webpack ？
@@ -44,6 +44,8 @@ Webpack 的存在打破了长期以来 Javascript 开发的一大痛点 —— �
 1. 初始化阶段，读取合并配置参数，初始化 loader 与 plugin，实例化 compiler，compiler 调用 run 方法开始编译
 2. 编译阶段，从入口文件出发，使用相应的 loader 解析内容，使 webpack 能够识别处理的有效模块，并递归进行编译处理，最后遍历完所有模块文件，生成 “模块依赖图” 
 3. 输出阶段，根据模块生成 chunk，把 chunk 写入文件，存入文件系统或者内存文件系统 
+
+[webpack 详细流程图](./webpack-workflow.jpg)
 
 ### 模块管理
 #### runtime
@@ -96,7 +98,8 @@ webpack_require 的源码大概是这样：
         return module.exports;
     }
 
-## 内部架构
+## 运行原理
+
 Webpack 内部架构是基于 Tapable 构建的，Tapable 是一个用于事件发布订阅执行的插件架构。插件通过被 Webpack 调用 apply 的方式，往 compiler 上注册事件，来监听 webpack 的运行周期的某个时刻触发的事件来完成自己的功能需求。
 
 ### Compiler
