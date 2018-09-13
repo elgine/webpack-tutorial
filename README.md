@@ -32,6 +32,15 @@ Webpack 有以下特点或者说优点：
     module.exports = {
         // 入口文件/
         entry: Object|Array|String,
+        // node：编译为类 node.js 环境可用
+        // webworker：编译成一个 WebWorker
+        // node-webkit：编译为Webkit可用
+        // eletron-main：Electron 主进程
+        // electron-renderer：Electron 渲染进程，编译为 Electron 渲染进程，使用 
+        // JsonpTemplatePlugin, FunctionModulePlugin 来为浏览器环境提供目标，使用 
+        // NodeTargetPlugin 和 ExternalsPlugin 为 CommonJS 和 Electron 内置模块提供目标。
+        // Web：默认浏览器环境
+        target: String,
         // 输出设置
         output: {
             // 输出路径

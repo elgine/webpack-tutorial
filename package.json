@@ -2,6 +2,7 @@
   "name": "webpack-tutorial",
   "version": "1.0.0",
   "description": "Webpack 从入门到放弃",
+  "main": "./webpack-example/electron/app.js",
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/plugin-syntax-dynamic-import": "^7.0.0",
@@ -18,6 +19,8 @@
     "compression-webpack-plugin": "^1.1.11",
     "css-loader": "^1.0.0",
     "cssnano": "^4.1.0",
+    "electron": "^2.0.9",
+    "electron-packager": "^12.1.1",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "file-loader": "^1.1.11",
     "grunt": "^1.0.3",
@@ -62,7 +65,11 @@
     "webpack-custom-loader": "webpack --config webpack-example/custom-loader/webpack.config.js",
     "webpack-custom-plugin": "webpack --config webpack-example/custom-plugin/webpack.config.js",
     "multiple-page-dev": "webpack-dev-server --config multiple-page/build/webpack.config.dev.js",
-    "multiple-page-prod": "webpack --config multiple-page/build/webpack.config.prod.js"
+    "multiple-page-prod": "webpack --config multiple-page/build/webpack.config.prod.js",
+    "build-electron-renderer": "webpack --config webpack-example/electron/webpack.config.renderer.js",
+    "build-electron-main": "webpack --config webpack-example/electron/webpack.config.main.js",
+    "debug-electron": "webpack-dev-server --config webpack-example/electron/webpack.config.renderer.js",
+    "electron": "electron ."
   },
   "repository": {
     "type": "git",
