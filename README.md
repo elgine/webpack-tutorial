@@ -1,5 +1,12 @@
 # Webpack 从入门到放弃
-![image](./webpack.png)
+
+[GitHub地址](https://github.com/webpack/webpack)
+
+[官方文档地址](https://webpack.js.org)
+
+[中文文档地址](https://webpack.docschina.org)
+
+![封面](./webpack.png)
 
 ## Webpack 是什么？为什么使用 webpack ？
 
@@ -99,12 +106,12 @@ Webpack 有以下特点或者说优点：
 
 ## 打包原理
 
-### 流程
+### 打包基本流程
 1. 初始化阶段，读取合并配置参数，初始化 loader 与 plugin，实例化 compiler，compiler 调用 run 方法开始编译
 2. 编译阶段，从入口文件出发，使用相应的 loader 解析内容，使 webpack 能够识别处理的有效模块，并递归进行编译处理，最后遍历完所有模块文件，生成 “模块依赖图” 
 3. 输出阶段，根据模块生成 chunk，把 chunk 写入文件，存入文件系统或者内存文件系统 
 
-[webpack 详细流程图](./webpack-workflow.jpg)
+![webpack 详细流程图](./webpack-workflow.jpg)
 
 ### 模块管理
 #### runtime
@@ -341,15 +348,55 @@ ResolveLoader 用于配置 Webpack 如何寻找 Loader。 默认情况下只会�
 
 加上以上配置后， Webpack 会先去 node_modules 项目下寻找 Loader，如果找不到，会再去 ./loaders/ 目录下寻找。
 
-## 运行原理
+## 插件机制
 
-Webpack 内部架构是基于 Tapable 构建的，Tapable 是一个用于事件发布订阅执行的插件架构。插件通过被 Webpack 调用 apply 的方式，往 compiler 上注册事件，来监听 webpack 的运行周期的某个时刻触发的事件来完成自己的功能需求。
+Webpack 基于事件流的插件架构，内部工作流程基于插件机制串接起来，而组织管理这一切的是 Tapable。Tapable 是一个用于事件发布订阅执行的插件架构，由官方维护。基于 Tapable 架构的 Webpack 体系保证了插件的有序性，使得整个系统非常有弹性，扩展性很好；然而有一个致命的缺点就是源码阅读性差、调试困难。
+
+![Tapable](./Tapable.png)
 
 ### Compiler
 >Webpack 初始化时创建的单例对象，基于 Tapable 的实例，整个 webpack 生命周期里只有一个，包含了 webpack 的所有环境描述。
 
+![Compiler](./Compiler.png)
+
+| 钩子 | 作用 | 参数 | 类型 |
+| ------ | ------ | ------ | ------ |
+| entry-option | 在 entry 配置项处理之后 | 无 | sync-bail |
+| before-run | 在 compiler.run() 执行之前 | compiler | async |
+| run | 在读取记录之前 | compiler | async |
+| watch-run | 监听模式下，新的一次 compilation 触发之后，在编译开始之前  | compiler | async |
+| before-compile | 在创建新 compilation 之后 | compilationParams | async |
+| compile | 在创建新 compilation 之前 | compilationParams | sync |
+| compilation | compilation 创建完成 | compilation | sync |
+| make | 从 entry 开始递归分析依赖，对依赖模块执行 build | compilation | async |
+| emit | 在生成资源并输出到目录之前 | compilation | async |
+| after-emit | 在生成资源并输出到目录之后 | compilation | async |
+| done | 完成编译 | stats | sync |
+
 ### Compilation
->compilation 对象代表了一次单一的版本构建和生成资源，基于 Tapable 的实例。当运行 webpack 时，每当检测到一个文件变化，一次新的编译将被创建，从而生成一组新的编译资源。一个编译对象表现了当前的模块资源、编译生成资源、变化的文件、以及被跟踪依赖的状态信息。
+>Compilation 对象代表了一次单一的版本构建和生成资源，基于 Tapable 的实例。当运行 webpack 时，每当检测到一个文件变化，一次新的编译将被创建，从而生成一组新的编译资源。一个编译对象表现了当前的模块资源、编译生成资源、变化的文件、以及被跟踪依赖的状态信息。
+
+>Compiler（编译器）的run方法中调用compiler方法开始编译，在编译过程中创建了一个Compilation对象。
+
+>Compilation 实例能够访问所有的模块和它们的依赖（大部分是循环依赖）。它会对应用程序的依赖图中所有模块进行字面上的编译(literal compilation)。在编译阶段，模块会被加载(loaded)、封存(sealed)、优化(optimized)、分块(chunked)、哈希(hashed)和重新创建(restored)。
+
+![Compilation](./Compilation.png)
+
+| 钩子 | 作用 | 参数 | 类型 |
+| ------ | ------ | ------ | ------ |
+| normal-module-loader | 普通模块加载 | loaderContext module | sync |
+| seal | Compilation 停止接受新模块时触发 | 无 | sync |
+| optimize-modules | 优化模块 | modules | sync-bail |
+| optimize-chunks | 优化 Chunk | chunks | sync-bail | 
+| optimize-chunk-assets | 优化所有 chunk 资源(asset)。资源(asset)会被存储在 compilation.assets。每个 Chunk 都有一个 files 属性，指向这个 chunk 创建的所有文件。附加资源(asset)被存储在 compilation.additionalChunkAssets 中 | chunks | async-series |
+| optimize-assets | 优化存储在 compilation.assets 中的所有资源(asset) | assets | async-series |
+| before-hash | 编译生成哈希前 | 无 | sync |
+| after-hash | 编译生成哈希后 | 无 | sync |
+| build-module | 在模块构建开始之前触发 | module | sync |
+| succeed-module | 模块构建成功 | module | sync |
+| module-asset | 一个模块中的一个资源被添加到编译中 | module filename | sync |
+| chunk-asset | 一个 chunk 中的一个资源被添加到编译中 | chunk filename | sync |
+
 
 ### Plugin
 Webpack 插件有以下特点：
@@ -366,22 +413,25 @@ Webpack 插件有以下特点：
 
     // Webpack 会调用 apply 方法并注入 compiler
     Plugin.prototype.apply = function(compiler){
+        // 4.0 前使用 plugin 挂载方式
         // 通过 plugin 可以获取 compilation，Webpack 会在特定时间 broadcast 事件
         compiler.plugin("event", function(compilation, callback){
             ...
         });
+
+        // 4.0 后使用 hooks API
+        compiler.hooks.someHook.tap(/* ... */);
         ...
     }
 
-下面是一些常见的时间钩子的说明：
 
-| 钩子 | 作用 | 参数 | 类型 |
-| ------ | ------ | ------ | ------ |
-|after-plugins | 设置完一组初始化插件之后 | compiler | sync |
-|after-resolvers | 设置完 resolvers 之后 | compiler | sync |
-|run | 在读取记录之前 | compiler | async |
-|compile | 在创建新 compilation 之前 | compilationParams | sync |
-|compilation | compilation 创建完成 | compilation | sync |
-|emit | 在生成资源并输出到目录之前 | compilation | async |
-|after-emit | 在生成资源并输出到目录之后 | compilation | async |
-|done | 完成编译 | stats | sync |
+## Webpack 参考资料
+[命令行输入webpack的时候都发生了什么](https://github.com/DDFE/DDFE-blog/issues/12)
+
+[Webpack 源码（一）—— Tapable 和 事件流](https://segmentfault.com/a/1190000008060440)
+
+[webpack 源码解析](https://lihuanghe.github.io/2016/05/30/webpack-source-analyse.html)
+
+[Webpack plugin 运行机制](https://fengmiaosen.github.io/2017/03/21/webpack-core-code/)
+
+[webpack 源码导读](https://www.cnblogs.com/QH-Jimmy/category/1129698.html)
