@@ -31,7 +31,8 @@ Webpack 有以下特点或者说优点：
             path: string,
             // 输出文件名称
             filename: string,
-
+            // 为动态加载的 Chunk 配置输出文件的名称
+            chunkFilename: '[name].js', 
             // 以下均在输出库的情况下使用
             // 导出的 library 名称
             library: "math",

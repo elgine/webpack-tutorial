@@ -4,6 +4,7 @@
   "description": "Webpack 从入门到放弃",
   "devDependencies": {
     "@babel/core": "^7.0.0",
+    "@babel/plugin-syntax-dynamic-import": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
     "babel-loader": "^8.0.2",
     "babel-plugin-transform-decorators-legacy": "^1.3.5",
@@ -55,7 +56,7 @@
     "webpack-simple": "webpack --config webpack-example/simple/webpack.config.js",
     "webpack-hmr-simple": "webpack-dev-server --colors --progress --config webpack-example/hmr-simple/webpack.config.js",
     "webpack-hmr-express": "nodemon --config ./webpack-example/hmr-express/nodemon.json ./webpack-example/hmr-express/app.js",
-    "webpack-split-code": "webpack --config webpack-example/split-code/webpack.config.js",
+    "webpack-split-code": "webpack-dev-server --config webpack-example/split-code/webpack.config.js",
     "webpack-tree-shaking": "webpack --config webpack-example/tree-shaking/webpack.config.js",
     "webpack-build": "webpack --config webpack-example/library/webpack.config.js",
     "webpack-custom-loader": "webpack --config webpack-example/custom-loader/webpack.config.js",
