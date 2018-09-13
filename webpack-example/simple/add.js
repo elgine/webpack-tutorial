@@ -1,3 +1,8 @@
+// new Promise((resolve)=>{
+//     console.log("add");
+//     resolve();
+// })
+
 export default ()=>{
     var args = Array.prototype.slice.call(arguments);
     function fn(){
