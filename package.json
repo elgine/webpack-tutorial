@@ -19,7 +19,7 @@
     "compression-webpack-plugin": "^1.1.11",
     "css-loader": "^1.0.0",
     "cssnano": "^4.1.0",
-    "electron": "^2.0.9",
+    "electron": "^9.1.0",
     "electron-packager": "^12.1.1",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "file-loader": "^1.1.11",
